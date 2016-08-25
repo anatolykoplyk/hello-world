@@ -1,0 +1,13 @@
+D:\Work\BST\BST\bin\Debug\BST.exe.config
+D:\Work\BST\BST\bin\Debug\BST.exe
+D:\Work\BST\BST\bin\Debug\BST.pdb
+D:\Work\BST\BST\obj\Debug\BST.csprojResolveAssemblyReference.cache
+D:\Work\BST\BST\obj\Debug\MainWindow.baml
+D:\Work\BST\BST\obj\Debug\MainWindow.g.cs
+D:\Work\BST\BST\obj\Debug\App.g.cs
+D:\Work\BST\BST\obj\Debug\BST_MarkupCompile.cache
+D:\Work\BST\BST\obj\Debug\BST.g.resources
+D:\Work\BST\BST\obj\Debug\BST.Properties.Resources.resources
+D:\Work\BST\BST\obj\Debug\BST.csproj.GenerateResource.Cache
+D:\Work\BST\BST\obj\Debug\BST.exe
+D:\Work\BST\BST\obj\Debug\BST.pdb
