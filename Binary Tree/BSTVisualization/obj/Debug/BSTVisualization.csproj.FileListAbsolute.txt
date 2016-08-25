@@ -1,0 +1,15 @@
+D:\Work\Binary Tree\BSTVisualization\bin\Debug\BSTVisualization.exe.config
+D:\Work\Binary Tree\BSTVisualization\obj\Debug\BSTVisualization.csprojResolveAssemblyReference.cache
+D:\Work\Binary Tree\BSTVisualization\obj\Debug\MainWindow.baml
+D:\Work\Binary Tree\BSTVisualization\obj\Debug\MainWindow.g.cs
+D:\Work\Binary Tree\BSTVisualization\obj\Debug\App.g.cs
+D:\Work\Binary Tree\BSTVisualization\obj\Debug\BSTVisualization_MarkupCompile.cache
+D:\Work\Binary Tree\BSTVisualization\obj\Debug\BSTVisualization.g.resources
+D:\Work\Binary Tree\BSTVisualization\obj\Debug\BSTVisualization.Properties.Resources.resources
+D:\Work\Binary Tree\BSTVisualization\obj\Debug\BSTVisualization.csproj.GenerateResource.Cache
+D:\Work\Binary Tree\BSTVisualization\bin\Debug\BSTVisualization.exe
+D:\Work\Binary Tree\BSTVisualization\bin\Debug\BSTVisualization.pdb
+D:\Work\Binary Tree\BSTVisualization\obj\Debug\BSTVisualization.exe
+D:\Work\Binary Tree\BSTVisualization\obj\Debug\BSTVisualization.pdb
+D:\Work\Binary Tree\BSTVisualization\bin\Debug\Binary Tree.exe
+D:\Work\Binary Tree\BSTVisualization\bin\Debug\Binary Tree.pdb

@@ -1,0 +1,31 @@
+﻿<Window x:Class="BSTVisualization.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="BST Drawing" Height="487" Width="800">
+    <Window.Background>
+        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+            <GradientStop  Color="White" Offset="0"/>
+            <GradientStop  Color="Azure" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Background>
+
+    <Viewbox Stretch="Uniform">
+
+        <StackPanel ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+            <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
+                <Button x:Name="btnDraw"  Width="49" Content="Draw"  FontFamily="Times New Roman" FontWeight="Bold" FontSize="16" Click="btnDraw_Click"/>
+                <TextBox Name="textArray" ScrollViewer.VerticalScrollBarVisibility="Auto" Height="30" TextWrapping="Wrap" Width="211" Margin="10,0,0,0" ToolTip="Произвольный массив чисел"/>
+                <Slider Name="countSlider" Margin="5 5 5 5" Minimum="5" Maximum="100" Value="10" Grid.Row="0" Width="37" SmallChange="1" IsSnapToTickEnabled="True" ToolTip="Обьём дерева" />
+                <TextBox x:Name="SizeTextBox" Text="{Binding Value, ElementName=countSlider}" Width="23"/>
+
+                <Button Content="Start" Name="start_btn" Width="29" Margin="5,0,0,0" Click="start_btn_Click" />
+                <Button Content="Stop" Name="stop_btn" Width="29" Margin="5,0,0,0" Click="stop_btn_Click" />
+                <Slider x:Name="speedSlider" Margin="5 5 5 5" Minimum="10" Maximum="3000" Value="500" Width="37" SmallChange="1" IsSnapToTickEnabled="True" ToolTip="Скорость"/>
+                <TextBox x:Name="SpeedTextBox" Text="{Binding Value, ElementName=speedSlider}" Width="37"/>
+                <CheckBox Margin="5" Name="useArrayChBox" ToolTip="Use array in textbox"/>
+            </StackPanel>
+            <Canvas x:Name="canvas1" Width="539" Height="300" Margin="5"  Background="#FFF"/>            
+        </StackPanel>
+    </Viewbox>
+
+</Window>
