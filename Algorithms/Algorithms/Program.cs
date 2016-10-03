@@ -1,6 +1,8 @@
 ﻿using System;
 using Algorithms.Helpers;
 using System.Configuration;
+using System.IO;
+using Algorithms.Entities;
 
 namespace Algorithms
 {
@@ -13,12 +15,18 @@ namespace Algorithms
 			int.TryParse(ConfigurationManager.AppSettings["cols"], out cols);
 			int.TryParse(ConfigurationManager.AppSettings["max"], out maxEl);
 			var fname = ConfigurationManager.AppSettings["problemFile"];
-			MatrixGenerator.GenerateProblem(
-				cols, 
-				rows, 
-				maxEl, 
-				String.IsNullOrEmpty(fname) ? String.Empty : fname);
 
+			if (!File.Exists(fname))
+			{
+				MatrixGenerator.GenerateProblem(
+					cols,
+					rows,
+					maxEl,
+					String.IsNullOrEmpty(fname) ? String.Empty : fname);
+			}
+			Console.WriteLine("File already exists");
+
+			//var peakProblem = new PeakProblem();
 		}
 	}
 }

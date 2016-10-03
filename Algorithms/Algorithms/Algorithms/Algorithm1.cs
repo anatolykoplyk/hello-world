@@ -1,56 +1,87 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Algorithms.Entities;
+using Algorithms.Helpers;
 
 namespace Algorithms.Algorithms
 {
 	public static class Algorithm1
 	{
-		public static Location FindAPeak(PeakProblem problem)
+		public static Location FindPeak(PeakProblem problem)
 		{
-			//if it's empty, we're done 
+			// if it's empty, we're done 
 			if (problem.NumRow <= 0 || problem.NumCol <= 0)
+			{
+				Console.WriteLine("Empty input data. No Peak");
 				return null;
+			}
 
-			//# the recursive subproblem will involve half the number of columns
+			// the recursive subproblem will involve half the number of columns
 			var mid = problem.NumCol/2;
 
-			var startRow = new Location(0, problem.NumRow);
+			// information about the two subproblems
+			var subStartRow = new Tuple<int, int>(0, problem.NumRow);
+			var subProblem1 = new Tuple<int, int>(0, mid);
+			var subProblem2 = new Tuple<int, int>(mid + 1, problem.NumCol - (mid + 1));
 
-			var subProblems = new List<PeakProblem>();
-			subProblems.Add(new PeakProblem());
-			//# information about the two subproblems
-			//(subStartR, subNumR) = (0, problem.numRow)
-			//(subStartC1, subNumC1) = (0, mid)
-			//(subStartC2, subNumC2) = (mid + 1, problem.numCol - (mid + 1))
+			var subProblems = new List<Bound>
+			{
+				new Bound(
+					subStartRow.Item1, //start row
+					subProblem1.Item1, //start col
+					subStartRow.Item2, // number of rows
+					subProblem1.Item2), // number of cols
+				new Bound(
+					subStartRow.Item1,
+					subProblem2.Item1,
+					subStartRow.Item2,
+					subProblem2.Item2)
+			};
+			
+			// get a list of all locations in the dividing column
+			var divider = CrossProduct(problem.NumRow, mid);
 
-			//subproblems = []
-			//subproblems.append((subStartR, subStartC1, subNumR, subNumC1))
-			//subproblems.append((subStartR, subStartC2, subNumR, subNumC2))
+			// find the maximum in the dividing column
+			var bestLoc = problem.GetMaximum(divider);
 
-			//# get a list of all locations in the dividing column
-			//divider = crossProduct(range(problem.numRow), [mid])
+			// see if the maximum value we found on the dividing line has a better
+			// neighbor (which cannot be on the dividing line, because we know that
+			// this location is the best on the dividing line)
+			var neighbor = problem.GetBetterNeighbor(bestLoc);
 
-			//# find the maximum in the dividing column
-			//bestLoc = problem.getMaximum(divider, trace)
+			// this is a peak, so return it
+			if (neighbor.Equals(bestLoc))
+			{
+				//	if not trace is None: trace.foundPeak(bestLoc)
+				return bestLoc;
+			}
 
-			//# see if the maximum value we found on the dividing line has a better
-			//# neighbor (which cannot be on the dividing line, because we know that
-			//# this location is the best on the dividing line)
-			//neighbor = problem.getBetterNeighbor(bestLoc, trace)
+			// otherwise, figure out which subproblem contains the neighbor, and
+			// recurse in that half
+			var subProblem = problem.GetSubproblemContaining(subProblems, neighbor);
 
-			//# this is a peak, so return it
-			//if neighbor == bestLoc:
-			//	if not trace is None: trace.foundPeak(bestLoc)
-			//	return bestLoc
-
-			//# otherwise, figure out which subproblem contains the neighbor, and
-			//# recurse in that half
-			//sub = problem.getSubproblemContaining(subproblems, neighbor)
 			//if not trace is None: trace.setProblemDimensions(sub)
-			//result = algorithm1(sub, trace)
-			//return problem.getLocationInSelf(sub, result)
 
-			return null;
+			var result = FindPeak(subProblem);
+
+			return problem.GetLocationInSelf(subProblem, result);
+		}
+
+
+		// Returns all pairs with one item from the first list and one item from
+		// the second list.  (Cartesian product of the two lists.)
+		private static IEnumerable<Location> CrossProduct(int rows, int cols)
+		{
+			var res = new List<Location>();
+
+			for (int r = 0; r < rows; r++)
+			{
+				for (int c = 0; c < cols; c++)
+				{
+					res.Add(new Location(r, c));
+				}
+			}
+			return res;
 		}
 	}
 }

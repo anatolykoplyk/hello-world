@@ -44,8 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms\Algorithm1.cs" />
-    <Compile Include="Entities\Bounds.cs" />
+    <Compile Include="Entities\Bound.cs" />
     <Compile Include="Entities\Location.cs" />
+    <Compile Include="Helpers\Extentions.cs" />
     <Compile Include="Helpers\MatrixGenerator.cs" />
     <Compile Include="Entities\PeakProblem.cs" />
     <Compile Include="Program.cs" />

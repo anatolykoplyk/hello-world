@@ -8,19 +8,19 @@ namespace Algorithms.Entities
 	{
 		private readonly int[][] _array;
 
-		public PeakProblem(IEnumerable<int[]> array, Bounds bounds)
+		public PeakProblem(IEnumerable<int[]> array, Bound bound)
 		{
 			_array = array.ToArray();
-			StartRow = bounds.StartRow;
-			StartCol = bounds.StartCol;
-			NumRow = bounds.NumRow;
-			NumCol = bounds.NumCol;
+			StartRow = bound.StartRow;
+			StartCol = bound.StartCol;
+			NumRow = bound.NumRow;
+			NumCol = bound.NumCol;
 		}
 		
-		public int StartRow { get; private set; }
-		public int StartCol { get; private set; }
-		public int NumRow { get; private set; }
-		public int NumCol { get; private set; }
+		public int StartRow { get; }
+		public int StartCol { get; }
+		public int NumRow { get; }
+		public int NumCol { get; }
 
 		//Returns the value of the array at the given location, offset by
 		//the coordinates(startRow, startCol).
@@ -105,13 +105,13 @@ namespace Algorithms.Entities
 		//Returns a subproblem with the given bounds.The bounds is a quadruple
 		//of numbers: (starting row, starting column, # of rows, # of columns).
 		//RUNTIME: O(1)
-		public PeakProblem GetSubproblem(Bounds bounds)
+		public PeakProblem GetSubproblem(Bound bound)
 		{
-			var newBounds = new Bounds(
-				StartRow + bounds.StartRow, 
-				StartCol + bounds.StartCol,
-				bounds.NumRow,
-				bounds.NumCol);
+			var newBounds = new Bound(
+				StartRow + bound.StartRow, 
+				StartCol + bound.StartCol,
+				bound.NumRow,
+				bound.NumCol);
 			return new PeakProblem(_array, newBounds);
 		}
 
@@ -127,78 +127,5 @@ namespace Algorithms.Entities
 
 			return new Location(newRow, newCol);
 		}
-
-		/*
-
-    def getSubproblemContaining(self, boundList, location):
-        """
-        Returns the subproblem containing the given location.  Picks the first
-        of the subproblems in the list which satisfies that constraint, and
-        then constructs the subproblem using getSubproblem().
-
-        RUNTIME: O(len(boundList))
-        """
-
-        (row, col) = location
-        for (sRow, sCol, nRow, nCol) in boundList:
-            if sRow <= row and row < sRow + nRow:
-                if sCol <= col and col < sCol + nCol:
-                    return self.getSubproblem((sRow, sCol, nRow, nCol))
-
-        # shouldn't reach here
-        return self
-
-    def getLocationInSelf(self, problem, location):
-        """
-        Remaps the location in the given problem to the same location in
-        the problem that this function is being called from.
-
-        RUNTIME: O(1)
-        """
-
-        (row, col) = location
-        newRow = row + problem.startRow - self.startRow
-        newCol = col + problem.startCol - self.startCol
-        return (newRow, newCol)
-
-################################################################################
-################################ Helper Methods ################################
-################################################################################
-
-def getDimensions(array):
-    """
-    Gets the dimensions for a two-dimensional array.  The first dimension
-    is simply the number of items in the list; the second dimension is the
-    length of the shortest row.  This ensures that any location (row, col)
-    that is less than the resulting bounds will in fact map to a valid
-    location in the array.
-
-    RUNTIME: O(len(array))
-    """
-
-    rows = len(array)
-    cols = 0
-    
-    for row in array:
-        if len(row) > cols:
-            cols = len(row)
-    
-    return (rows, cols)
-
-def createProblem(array):
-    """
-    Constructs an instance of the PeakProblem object for the given array,
-    using bounds derived from the array using the getDimensions function.
-   
-    RUNTIME: O(len(array))
-    """
-
-    (rows, cols) = getDimensions(array)
-    return PeakProblem(array, (0, 0, rows, cols))
-		 */
-
-
-
-
 	}
 }
