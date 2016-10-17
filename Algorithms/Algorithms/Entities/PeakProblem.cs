@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Algorithms.Helpers;
 
 namespace Algorithms.Entities
 {
@@ -78,11 +79,12 @@ namespace Algorithms.Entities
 
 		//Finds the location in the current problem with the greatest value.
 		//RUNTIME: O(len(locations))
-		public Location GetMaximum(IEnumerable<Location> locations)
+		public Location GetMaximum(IEnumerable<Location> locations, Logger logger)
 		{
 			Location bestLocation = null;
 			var bestValue = 0;
-			foreach (var loc in locations)
+			var locationList = locations.ToList();
+			foreach (var loc in locationList)
 			{
 				var v = GetLocationValue(loc);
 				if (bestLocation == null ||  v > bestValue)
@@ -91,7 +93,7 @@ namespace Algorithms.Entities
 					bestValue = v;
 				}
 			}
-
+			logger.LogGetMaximum(locationList, bestLocation);
 			return bestLocation;
 		}
 
@@ -114,12 +116,10 @@ namespace Algorithms.Entities
 				bound.NumCol);
 			return new PeakProblem(_array, newBounds);
 		}
-
 		
 		//Remaps the location in the given problem to the same location in
 		//the problem that this function is being called from.
 		//RUNTIME: O(1)
-
 		public Location GetLocationInSelf(PeakProblem problem, Location location)
 		{
 			var newRow = location.Row + problem.StartRow - StartRow;

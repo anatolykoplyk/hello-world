@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Algorithms.Entities;
 
 namespace Algorithms.Helpers
 {
-	class MatrixGenerator
+	class PeakProblemGenerator
 	{
 		public static void GenerateProblem(int cols = 10, int rows = 10, int max = 1000, string fileName = "problem.txt" )
 		{
@@ -41,6 +42,36 @@ namespace Algorithms.Helpers
 			{
 				Console.WriteLine(v);
 			}
+		}
+
+		public static PeakProblem LoadProblemFromFile(string file)
+		{
+			var array = File.ReadAllLines(file);
+			var dimensions = GetDimensions(array);
+			return new PeakProblem(
+				array.Select(i => Array.ConvertAll(i.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries), int.Parse)),
+				new Bound(0, 0, dimensions.Item1, dimensions.Item2));
+		}
+
+		//Gets the dimensions for a two-dimensional array.The first dimension
+		//is simply the number of items in the list; the second dimension is the
+		//length of the shortest row.This ensures that any location (row, col)
+		//that is less than the resulting bounds will in fact map to a valid
+		//location in the array.
+		private static Tuple<int, int> GetDimensions(string[] array)
+		{
+			var rows = array.Length;
+			var cols = 0;
+
+			foreach (var row in array)
+			{
+				var rowLenght = row.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries).Length;
+				if (rowLenght > cols)
+				{
+					cols = rowLenght;
+				}
+			}
+			return new Tuple<int, int>(rows, cols);
 		}
 
 		private static IEnumerable<string> FormatArray(IEnumerable<int[]> generated)

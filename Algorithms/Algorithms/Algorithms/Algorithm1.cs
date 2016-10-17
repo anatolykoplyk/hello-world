@@ -7,7 +7,7 @@ namespace Algorithms.Algorithms
 {
 	public static class Algorithm1
 	{
-		public static Location FindPeak(PeakProblem problem)
+		public static Location FindPeak(PeakProblem problem, Logger logger)
 		{
 			// if it's empty, we're done 
 			if (problem.NumRow <= 0 || problem.NumCol <= 0)
@@ -42,7 +42,7 @@ namespace Algorithms.Algorithms
 			var divider = CrossProduct(problem.NumRow, mid);
 
 			// find the maximum in the dividing column
-			var bestLoc = problem.GetMaximum(divider);
+			var bestLoc = problem.GetMaximum(divider, logger);
 
 			// see if the maximum value we found on the dividing line has a better
 			// neighbor (which cannot be on the dividing line, because we know that
@@ -62,7 +62,7 @@ namespace Algorithms.Algorithms
 
 			//if not trace is None: trace.setProblemDimensions(sub)
 
-			var result = FindPeak(subProblem);
+			var result = FindPeak(subProblem, logger);
 
 			return problem.GetLocationInSelf(subProblem, result);
 		}
