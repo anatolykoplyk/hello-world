@@ -5,14 +5,14 @@ using Algorithms.Helpers;
 
 namespace Algorithms.Algorithms
 {
-	public static class Algorithm1
+	public class Algorithm1 : IPeakFinder
 	{
-		public static Location FindPeak(PeakProblem problem, Logger logger)
+		public Location FindPeak(PeakProblem problem, Logger logger, Location currentLocation)
 		{
 			// if it's empty, we're done 
 			if (problem.NumRow <= 0 || problem.NumCol <= 0)
 			{
-				Console.WriteLine("Empty input data. No Peak");
+				logger.AddMessage("Empty input data. No Peak");
 				return null;
 			}
 
@@ -62,7 +62,7 @@ namespace Algorithms.Algorithms
 
 			//if not trace is None: trace.setProblemDimensions(sub)
 
-			var result = FindPeak(subProblem, logger);
+			var result = FindPeak(subProblem, logger, null);
 
 			return problem.GetLocationInSelf(subProblem, result);
 		}

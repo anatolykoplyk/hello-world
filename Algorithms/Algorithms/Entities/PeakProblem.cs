@@ -93,7 +93,10 @@ namespace Algorithms.Entities
 					bestValue = v;
 				}
 			}
-			logger.LogGetMaximum(locationList, bestLocation);
+
+			string s = "Found possible peak at: " + string.Format("Row={0}, Col={1}, Value={2}", bestLocation.Row, bestLocation.Col, bestValue);
+			logger.AddMessage(s);
+
 			return bestLocation;
 		}
 

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Algorithms.Helpers;
 using System.Configuration;
 using System.IO;
+using System.Linq;
+using System.Text;
 using Algorithms.Algorithms;
 using Algorithms.Entities;
 
@@ -15,34 +18,52 @@ namespace Algorithms
 			int.TryParse(ConfigurationManager.AppSettings["rows"], out rows);
 			int.TryParse(ConfigurationManager.AppSettings["cols"], out cols);
 			int.TryParse(ConfigurationManager.AppSettings["max"], out maxEl);
-			var existingProblem = ConfigurationManager.AppSettings["problemFile"];
+			var fileName = ConfigurationManager.AppSettings["problemFile"];
 
-			var logger = new Logger(string.Format(ConfigurationManager.AppSettings["logFile"], DateTime.Now));
+			var logger = new Logger("log.txt");
 
-			if (!File.Exists(existingProblem))
+			logger.AddMessage(String.Format(ConfigurationManager.AppSettings["logFile"], DateTime.Now) + "\r\n");
+
+			if (Convert.ToBoolean(ConfigurationManager.AppSettings["overwriteEverytime"]))
 			{
-				logger.AddMessage("Generated new file.");
-
-				PeakProblemGenerator.GenerateProblem(cols, rows, maxEl, 
-					string.IsNullOrEmpty(existingProblem) ? string.Empty : existingProblem);
+				var generated = PeakProblemGenerator.CreateRandomMatrix(cols, rows, maxEl);
+				var formattedArray = PeakProblemGenerator.FormatArray(generated).ToList();
+				logger.AddMessage("Generated a new peak problem file.");
+				File.WriteAllLines(fileName, formattedArray, Encoding.UTF8);
 			}
-
-			Console.WriteLine("File already exists. Programm will be working with the existing problem");
-
-			logger.AddMessage("Working with existing file.");
-
-			var peakProblem = PeakProblemGenerator.LoadProblemFromFile(existingProblem);
-
-			var peak = Algorithm1.FindPeak(peakProblem, logger);
+			else
+			{
+				logger.AddMessage("File already exists. Programm will work using an existing problem file");
+				logger.AddMessage("Working with existing file.");
+			}
 			
-			var status = "is NOT a peak (INCORRECT!)";
+			var peakProblem = PeakProblemGenerator.LoadProblemFromFile(fileName);
+			logger.AddMessage("Given problem:");
+			logger.AddMessage(File.ReadAllLines(fileName).Aggregate((current, next) => current + "\r\n" + next));
+			
 
-			if (peakProblem.IsPeak(peak))
+			var algrthms = new List<IPeakFinder>(4)
 			{
-				status = " is a peak";
+				new Algorithm1(),
+				new Algorithm2()
+			};
+
+			foreach (var a in algrthms)
+			{
+				var algoName = a.GetType().Name;
+				logger.AddMessage(string.Format("{0} started:", algoName));
+				var peak = a.FindPeak(peakProblem, logger, new Location(0, 0));
+				logger.AddMessage("Validating obtained peak...");
+				var status = " is NOT a peak (INCORRECT!)";
+				if (peakProblem.IsPeak(peak))
+				{
+					status = " is a peak";
+				}
+				logger.AddMessage(string.Format("{0} : {1} {2}\n\r", algoName, peak, status));
 			}
 
-			logger.AddMessage("Algorithm1 : " + peak + status);
+			logger.AddMessage("\r\nFinished.");
+			Console.WriteLine("Finished.");
 		}
 	}
 }

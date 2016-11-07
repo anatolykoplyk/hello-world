@@ -9,15 +9,6 @@ namespace Algorithms.Helpers
 {
 	class PeakProblemGenerator
 	{
-		public static void GenerateProblem(int cols = 10, int rows = 10, int max = 1000, string fileName = "problem.txt" )
-		{
-			var generated = CreateRandomMatrix(cols, rows, max);
-			Console.WriteLine("Generated a matrix with {0} row and {1} columns.", rows, cols);
-			var formatted = FormatArray(generated).ToList();
-			PrintProblem(formatted);
-			File.WriteAllLines(fileName, formatted, Encoding.UTF8);
-		}
-
 		public static IEnumerable<int[]> CreateRandomMatrix(int cols, int rows, int maxElement)
 		{
 			var rnd = new Random((int)DateTime.Now.Ticks);
@@ -74,7 +65,7 @@ namespace Algorithms.Helpers
 			return new Tuple<int, int>(rows, cols);
 		}
 
-		private static IEnumerable<string> FormatArray(IEnumerable<int[]> generated)
+		public static IEnumerable<string> FormatArray(IEnumerable<int[]> generated)
 		{
 			return generated.Select(x => string.Join("; ", x.Select(i => i.ToString(" 0#")))).ToArray();
 		}
