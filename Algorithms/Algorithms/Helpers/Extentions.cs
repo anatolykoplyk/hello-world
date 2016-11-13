@@ -9,10 +9,8 @@ namespace Algorithms.Helpers
 		{
 			//Returns the subproblem containing the given location.  Picks the first
 			//of the subproblems in the list which satisfies that constraint, and
-			//then constructs the subproblem using getSubproblem().
-
+			//then constructs the subproblem using getSubproblem()
 			//RUNTIME: O(len(boundList))
-
 			foreach (var b in bounds)
 			{
 				if (b.StartRow > loc.Row || loc.Row >= b.StartRow + b.NumRow) continue;

@@ -26,7 +26,7 @@ namespace Algorithms.Entities
 		//Returns the value of the array at the given location, offset by
 		//the coordinates(startRow, startCol).
 		//RUNTIME: O(1)
-		public int  GetLocationValue(Location location)
+		public int  GetValue(Location location)
 		{
 			if (location.Row < 0 || location.Row >= NumRow)
 			{
@@ -51,25 +51,25 @@ namespace Algorithms.Entities
 			var best = current;
 
 			var next = new Location(row - 1, col);
-			if (row - 1 >= 0 && GetLocationValue(next) > GetLocationValue(best))
+			if (row - 1 >= 0 && GetValue(next) > GetValue(best))
 			{
 				best = next;
 			}
 
 			next = new Location(row, col - 1);
-			if (col - 1 >= 0 && GetLocationValue(next) > GetLocationValue(best))
+			if (col - 1 >= 0 && GetValue(next) > GetValue(best))
 			{
 				best = next;
 			}
 
 			next = new Location(row + 1, col);
-			if (row + 1 < NumRow && GetLocationValue(next) > GetLocationValue(best))
+			if (row + 1 < NumRow && GetValue(next) > GetValue(best))
 			{
 				best = next;
 			}
 
 			next = new Location(row, col + 1);
-			if (col + 1 < NumCol && GetLocationValue(next) > GetLocationValue(best))
+			if (col + 1 < NumCol && GetValue(next) > GetValue(best))
 			{
 				best = next;
 			}
@@ -86,7 +86,7 @@ namespace Algorithms.Entities
 			var locationList = locations.ToList();
 			foreach (var loc in locationList)
 			{
-				var v = GetLocationValue(loc);
+				var v = GetValue(loc);
 				if (bestLocation == null ||  v > bestValue)
 				{
 					bestLocation = loc;

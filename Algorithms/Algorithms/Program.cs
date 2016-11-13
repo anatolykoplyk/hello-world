@@ -42,10 +42,11 @@ namespace Algorithms
 			logger.AddMessage(File.ReadAllLines(fileName).Aggregate((current, next) => current + "\r\n" + next));
 			
 
-			var algrthms = new List<IPeakFinder>(4)
+			var algrthms = new List<IPeakFinderAlgorithm>(4)
 			{
 				new Algorithm1(),
-				new Algorithm2()
+				new Algorithm2(),
+				new Algorithm3()
 			};
 
 			foreach (var a in algrthms)

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Algorithms.Entities;
 using Algorithms.Helpers;
 
 namespace Algorithms.Algorithms
 {
-	public class Algorithm1 : IPeakFinder
+	public class Algorithm1 : IPeakFinderAlgorithm
 	{
-		public Location FindPeak(PeakProblem problem, Logger logger, Location currentLocation)
+		public Location FindPeak(PeakProblem problem, Logger logger, Location currentLocation = null, Location bestSeen = null, bool splitRows = false)
 		{
 			// if it's empty, we're done 
 			if (problem.NumRow <= 0 || problem.NumCol <= 0)
@@ -39,7 +40,7 @@ namespace Algorithms.Algorithms
 			};
 			
 			// get a list of all locations in the dividing column
-			var divider = CrossProduct(problem.NumRow, mid);
+			var divider = CrossProductHelper.CrossProduct(Enumerable.Range(0, problem.NumRow), new [] { mid });
 
 			// find the maximum in the dividing column
 			var bestLoc = problem.GetMaximum(divider, logger);
@@ -65,23 +66,6 @@ namespace Algorithms.Algorithms
 			var result = FindPeak(subProblem, logger, null);
 
 			return problem.GetLocationInSelf(subProblem, result);
-		}
-
-
-		// Returns all pairs with one item from the first list and one item from
-		// the second list.  (Cartesian product of the two lists.)
-		private static IEnumerable<Location> CrossProduct(int rows, int cols)
-		{
-			var res = new List<Location>();
-
-			for (int r = 0; r < rows; r++)
-			{
-				for (int c = 0; c < cols; c++)
-				{
-					res.Add(new Location(r, c));
-				}
-			}
-			return res;
 		}
 	}
 }

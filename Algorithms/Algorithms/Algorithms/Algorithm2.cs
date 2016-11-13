@@ -3,9 +3,9 @@ using Algorithms.Helpers;
 
 namespace Algorithms.Algorithms
 {
-	public class Algorithm2 : IPeakFinder
+	public class Algorithm2 : IPeakFinderAlgorithm
 	{
-		public Location FindPeak(PeakProblem problem, Logger logger, Location currentLocation)
+		public Location FindPeak(PeakProblem problem, Logger logger, Location currentLocation = null, Location bestSeen = null, bool splitRows = false)
 		{
 			if (problem.NumRow <= 0 || problem.NumCol <= 0)
 			{
@@ -15,7 +15,7 @@ namespace Algorithms.Algorithms
 
 			var nextLocation = problem.GetBetterNeighbor(currentLocation);
 
-			if(currentLocation.Equals(nextLocation))
+			if(currentLocation != null && currentLocation.Equals(nextLocation))
 			{
 				return currentLocation;
 			}

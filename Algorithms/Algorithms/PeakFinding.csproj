@@ -43,9 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\Algorithm3.cs" />
     <Compile Include="Algorithms\Algorithm2.cs" />
     <Compile Include="Algorithms\Algorithm1.cs" />
-    <Compile Include="Algorithms\IPeakFinder.cs" />
+    <Compile Include="Algorithms\Algorithm4.cs" />
+    <Compile Include="Helpers\CrossProductHelper.cs" />
+    <Compile Include="Algorithms\IPeakFinderAlgorithm.cs" />
     <Compile Include="Entities\Bound.cs" />
     <Compile Include="Entities\Location.cs" />
     <Compile Include="Helpers\Extentions.cs" />
