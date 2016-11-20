@@ -53,15 +53,12 @@ namespace Algorithms.Algorithms
 			// this is a peak, so return it
 			if (neighbor.Equals(bestLoc))
 			{
-				//	if not trace is None: trace.foundPeak(bestLoc)
 				return bestLoc;
 			}
 
 			// otherwise, figure out which subproblem contains the neighbor, and
 			// recurse in that half
 			var subProblem = problem.GetSubproblemContaining(subProblems, neighbor);
-
-			//if not trace is None: trace.setProblemDimensions(sub)
 
 			var result = FindPeak(subProblem, logger, null);
 

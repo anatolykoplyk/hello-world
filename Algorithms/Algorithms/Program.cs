@@ -46,7 +46,8 @@ namespace Algorithms
 			{
 				new Algorithm1(),
 				new Algorithm2(),
-				new Algorithm3()
+				new Algorithm3(),
+				new Algorithm4()
 			};
 
 			foreach (var a in algrthms)
