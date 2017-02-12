@@ -8,10 +8,13 @@ namespace Multithreading
         static void Main(string[] args)
         {
             while (true)
-            {
-                RaceCondition.UseNonThreadSafeClasses();
+            { 
+            //RaceCondition.UseNonThreadSafeClasses();
+                Deadlock.Run();
                 Console.ReadLine();
+                Console.Clear();
             }
+            
         }
     }
 }
