@@ -26,7 +26,12 @@ namespace RSAvsElliptic
         {
             get { return _encryptedData; }
         }
-        
+
+        public byte[] DencryptedData
+        {
+            get { return _decryptedData; }
+        }
+
         public byte[] IV
         {
             get { return _iv; }
@@ -87,7 +92,7 @@ namespace RSAvsElliptic
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                return null;
+                return new byte[0];
             }           
         }
 
@@ -115,7 +120,7 @@ namespace RSAvsElliptic
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                return null;
+                return new byte[0];
             }
         }
 
@@ -136,7 +141,7 @@ namespace RSAvsElliptic
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                return null;
+                return new byte[0];
             }
         }        
 
@@ -153,7 +158,7 @@ namespace RSAvsElliptic
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                return false; ;
+                return false;
             }
         }
     }

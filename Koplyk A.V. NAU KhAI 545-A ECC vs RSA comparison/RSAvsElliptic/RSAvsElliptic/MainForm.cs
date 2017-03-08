@@ -9,13 +9,12 @@ namespace RSAvsElliptic
 {
     public partial class MainForm : Form
     {
-        //Create a UnicodeEncoder to convert between byte array and string.
-        UnicodeEncoding ByteConverter = new UnicodeEncoding();
-        RSA rsa = new RSA();
-        ECC ecc = new ECC();
-        RSAParameters KeyDigitalSignature;
-        Stopwatch sw = new Stopwatch();
-        Stopwatch sw1 = new Stopwatch();
+        readonly RSA _rsa = new RSA();
+        readonly ECC _ecc = new ECC();
+        RSAParameters _keyDigitalSignature;
+        readonly Stopwatch _sw = new Stopwatch();
+        readonly Stopwatch _sw1 = new Stopwatch();
+        private const int EccBlockSize = 20;
 
         public MainForm()
         {
@@ -34,146 +33,131 @@ namespace RSAvsElliptic
         private void openFile_Click(object sender, EventArgs e)
         {
             Stream myStream = null;
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-            openFileDialog1.Title = "Выберите файл для шифрования";
-            openFileDialog1.InitialDirectory = "c:\\";
-            openFileDialog1.FileName = @"C:\Users\User\Desktop\TestFileToEncrypt.txt";
-            openFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
-            openFileDialog1.FilterIndex = 2;
-            openFileDialog1.RestoreDirectory = true;
-
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            var ofd = new OpenFileDialog
+            {
+                Title = "Select file to work with",
+                InitialDirectory = "c:\\",
+                FileName = @"C:\Users\anatoliy.koplik\Desktop\New Text Document.txt",
+                Filter = "Txt files (*.txt)|*.txt|All files (*.*)|*.*",
+                FilterIndex = 2,
+                RestoreDirectory = true
+            };
+            if (ofd.ShowDialog() == DialogResult.OK)
             {
                 textBoxFilePath.Text = "";
                 try
                 {
-                    if ((myStream = openFileDialog1.OpenFile()) != null)
+                    myStream = ofd.OpenFile();
+                    using (myStream)
                     {
-                        using (myStream)
-                        {
-                            // Insert code to read the stream here.
-                            textBoxFilePath.Text = openFileDialog1.FileName;
-
-                            //if (openFileDialog1.ShowDialog() == DialogResult.OK)
-                            //    {
-                            //        System.IO.StreamReader sr = new System.IO.StreamReader(openFileDialog1.FileName);
-                            //        MessageBox.Show(sr.ReadToEnd());
-                            //        sr.Close();
-                            //    }
-                        }
+                        textBoxFilePath.Text = ofd.FileName;
                     }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
                 }
-            }            
+            }
         }
 
         private void Encrypt_Click(object sender, EventArgs e)
         {
-            if (!String.IsNullOrWhiteSpace(textBoxFilePath.Text))
+            if (String.IsNullOrWhiteSpace(textBoxFilePath.Text))
             {
-                try
-                {                    
-                    richTextBoxRSAparams.Clear();                  
-
-                    BinaryReader br = new BinaryReader(File.OpenRead(textBoxFilePath.Text));
-
-                    int block_size = ((KeySizeRSA.Value - 384) / 8) + 37;
-                    byte[] chunk;
-
-                    chunk = br.ReadBytes(block_size);
-                    while (chunk.Length > 0)
-                    {
-                        sw.Start();
-                        rsa.Encrypt(chunk, KeySizeRSA.Value);
-                        sw.Stop();
-                        chunk = br.ReadBytes(block_size);
-                    }
-
-                    TimeSpan ts = sw.Elapsed;
-                    sw.Reset();
-
-                    // Format and display the TimeSpan value.
-                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                        ts.Hours, ts.Minutes, ts.Seconds,
-                        ts.Milliseconds / 10);
-
-                    richTextBoxLog.AppendText("RSA Encrypting time:\n");
-                    richTextBoxLog.AppendText(elapsedTime);
-                    richTextBoxLog.AppendText("\n");
-                    richTextBoxLog.AppendText("\nRSA last chunk of encrypted data:\n" + Convert.ToBase64String(rsa.EncryptedData) + "\n\n");
-
-                    richTextBoxRSAparams.AppendText("D: " + Convert.ToBase64String(rsa.RSAParams.D) + "\n");
-                    richTextBoxRSAparams.AppendText("DP: " + Convert.ToBase64String(rsa.RSAParams.DP) + "\n");
-                    richTextBoxRSAparams.AppendText("DQ: " + Convert.ToBase64String(rsa.RSAParams.DQ) + "\n");
-                    richTextBoxRSAparams.AppendText("Exponent: " + Convert.ToBase64String(rsa.RSAParams.Exponent) + "\n");
-                    richTextBoxRSAparams.AppendText("InverseQ: " + Convert.ToBase64String(rsa.RSAParams.InverseQ) + "\n");
-                    richTextBoxRSAparams.AppendText("Modulus: " + Convert.ToBase64String(rsa.RSAParams.Modulus) + "\n");
-                    richTextBoxRSAparams.AppendText("P: " + Convert.ToBase64String(rsa.RSAParams.P) + "\n");
-                    richTextBoxRSAparams.AppendText("Q: " + Convert.ToBase64String(rsa.RSAParams.Q) + "\n");
-
-                    br.Close();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Something goes wrong " + ex.Message);
-                }
+                MessageBox.Show("First please enter file to encrypt.");
+                return;
             }
-            else
-            { MessageBox.Show("Enter file to encrypt first."); }
+            try
+            {
+                richTextBoxRSAparams.Clear();
+                BinaryReader br = new BinaryReader(File.OpenRead(textBoxFilePath.Text));
+                int blockSize = (KeySizeRSA.Value - 384) / 8 + 37;
+
+                var chunk = br.ReadBytes(blockSize);
+                while (chunk.Length > 0)
+                {
+                    _sw.Start();
+                    _rsa.Encrypt(chunk, KeySizeRSA.Value);
+                    _sw.Stop();
+                    chunk = br.ReadBytes(blockSize);
+                }
+
+                TimeSpan ts = _sw.Elapsed;
+                _sw.Reset();
+
+                // Format and display the TimeSpan value.
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds);
+
+                richTextBoxLog.AppendText("RSA Encrypting time:\n");
+                richTextBoxLog.AppendText(elapsedTime + "\n");
+                richTextBoxLog.AppendText("\nRSA last chunk of encrypted data:\n" + Encoding.Default.GetString(_rsa.EncryptedData) + "\n\n");
+
+                richTextBoxRSAparams.AppendText("D: " + Convert.ToBase64String(_rsa.RSAParams.D) + "\n");
+                richTextBoxRSAparams.AppendText("DP: " + Convert.ToBase64String(_rsa.RSAParams.DP) + "\n");
+                richTextBoxRSAparams.AppendText("DQ: " + Convert.ToBase64String(_rsa.RSAParams.DQ) + "\n");
+                richTextBoxRSAparams.AppendText("Exponent: " + Convert.ToBase64String(_rsa.RSAParams.Exponent) + "\n");
+                richTextBoxRSAparams.AppendText("InverseQ: " + Convert.ToBase64String(_rsa.RSAParams.InverseQ) + "\n");
+                richTextBoxRSAparams.AppendText("Modulus: " + Convert.ToBase64String(_rsa.RSAParams.Modulus) + "\n");
+                richTextBoxRSAparams.AppendText("P: " + Convert.ToBase64String(_rsa.RSAParams.P) + "\n");
+                richTextBoxRSAparams.AppendText("Q: " + Convert.ToBase64String(_rsa.RSAParams.Q) + "\n");
+
+                br.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Something went wrong " + ex.Message);
+            }
         }
 
         private void Decrypt_Click(object sender, EventArgs e)
         {
-            if (rsa.EncryptedData != null)
+            if (_rsa.EncryptedData == null)
             {
-                try
+                MessageBox.Show("Enter file to encrypt and make Encrypt operation first.");
+                return;
+            }
+            try
                 {
                     richTextBoxRSAparams.Clear();
                     BinaryReader br = new BinaryReader(File.OpenRead(textBoxFilePath.Text));
 
-                    int block_size = ((KeySizeRSA.Value - 384) / 8) + 37;
+                    int blockSize = (KeySizeRSA.Value - 384) / 8 + 37;
                     byte[] chunk;
-                    chunk = br.ReadBytes(block_size);
+                    chunk = br.ReadBytes(blockSize);
                     while (chunk.Length > 0)
-                    {                        
-                        rsa.Encrypt(chunk, KeySizeRSA.Value);
-                        sw.Start();
-                        rsa.Decrypt(KeySizeRSA.Value);
-                        sw.Stop();
-                        chunk = br.ReadBytes(block_size);
+                    {
+                        _rsa.Encrypt(chunk, KeySizeRSA.Value);
+                        _sw.Start();
+                        _rsa.Decrypt(KeySizeRSA.Value);
+                        _sw.Stop();
+                        chunk = br.ReadBytes(blockSize);
                     }
 
-                    TimeSpan ts = sw.Elapsed;
-                    sw.Reset();
+                    TimeSpan ts = _sw.Elapsed;
+                    _sw.Reset();
 
-                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}\n",
                         ts.Hours, ts.Minutes, ts.Seconds,
                         ts.Milliseconds / 10);
                     richTextBoxLog.AppendText("\nRSA Decrypting time:\n");
                     richTextBoxLog.AppendText(elapsedTime);
                     richTextBoxLog.AppendText("\n");
-                    richTextBoxLog.AppendText("Last chunk of Decrypted data:\n" + Convert.ToBase64String( rsa.DecryptedData) + "\n");
-                    richTextBoxLog.AppendText("Last chunk of Original data:\n" + Convert.ToBase64String( rsa.OriginalData));
-                    richTextBoxRSAparams.AppendText("D: " + Convert.ToBase64String(rsa.RSAParams.D) + "\n");
-                    richTextBoxRSAparams.AppendText("DP: " + Convert.ToBase64String(rsa.RSAParams.DP) + "\n");
-                    richTextBoxRSAparams.AppendText("DQ: " + Convert.ToBase64String(rsa.RSAParams.DQ) + "\n");
-                    richTextBoxRSAparams.AppendText("Exponent: " + Convert.ToBase64String(rsa.RSAParams.Exponent) + "\n");
-                    richTextBoxRSAparams.AppendText("InverseQ: " + Convert.ToBase64String(rsa.RSAParams.InverseQ) + "\n");
-                    richTextBoxRSAparams.AppendText("Modulus: " + Convert.ToBase64String(rsa.RSAParams.Modulus) + "\n");
-                    richTextBoxRSAparams.AppendText("P: " + Convert.ToBase64String(rsa.RSAParams.P) + "\n");
-                    richTextBoxRSAparams.AppendText("Q: " + Convert.ToBase64String(rsa.RSAParams.Q) + "\n");
+                    richTextBoxLog.AppendText("Last chunk of Decrypted data:\n" + Encoding.Default.GetString(_rsa.DecryptedData) + "\n");
+                    richTextBoxLog.AppendText("Last chunk of Original data:\n" + Encoding.Default.GetString(_rsa.OriginalData));
+                    richTextBoxRSAparams.AppendText("D: " + Convert.ToBase64String(_rsa.RSAParams.D) + "\n");
+                    richTextBoxRSAparams.AppendText("DP: " + Convert.ToBase64String(_rsa.RSAParams.DP) + "\n");
+                    richTextBoxRSAparams.AppendText("DQ: " + Convert.ToBase64String(_rsa.RSAParams.DQ) + "\n");
+                    richTextBoxRSAparams.AppendText("Exponent: " + Convert.ToBase64String(_rsa.RSAParams.Exponent) + "\n");
+                    richTextBoxRSAparams.AppendText("InverseQ: " + Convert.ToBase64String(_rsa.RSAParams.InverseQ) + "\n");
+                    richTextBoxRSAparams.AppendText("Modulus: " + Convert.ToBase64String(_rsa.RSAParams.Modulus) + "\n");
+                    richTextBoxRSAparams.AppendText("P: " + Convert.ToBase64String(_rsa.RSAParams.P) + "\n");
+                    richTextBoxRSAparams.AppendText("Q: " + Convert.ToBase64String(_rsa.RSAParams.Q) + "\n");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Something goes wrong " + ex.Message);
+                    MessageBox.Show("Something went wrong " + ex.Message);
                 }
-            }
-            else
-            { MessageBox.Show("Enter file to encrypt and make Encrypt operation first."); }
+            
         }
 
         private void ClearLog_Click(object sender, EventArgs e)
@@ -188,26 +172,27 @@ namespace RSAvsElliptic
 
             try
             {
-                if (rsa.SignedData == null)
+                if (_rsa.SignedData == null)
                 {
                     MessageBox.Show("Data wasn`t signed yet! Try to sign data first.");
                     return;
                 }
-                sw.Start();
-                bool verified = rsa.VerifySignedHash(rsa.OriginalData, rsa.SignedData, KeyDigitalSignature, KeySizeRSA.Value);
-                sw.Stop();
+                _sw.Start();
+                bool verified = _rsa.VerifySignedHash(_rsa.OriginalData, _rsa.SignedData, _keyDigitalSignature, KeySizeRSA.Value);
+                _sw.Stop();
                 if (verified)
                 {
-                    TimeSpan ts = sw.Elapsed;
-                    sw.Reset();
+                    TimeSpan ts = _sw.Elapsed;
+                    _sw.Reset();
                     string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                         ts.Hours, ts.Minutes, ts.Seconds,
                         ts.Milliseconds / 10);
-                    richTextBoxLog.AppendText("The data was verified. Time of verification is " + elapsedTime);
+                    richTextBoxLog.AppendText("\nThe DS was verified. " +
+                                              "\nTime of verification is " + elapsedTime + "\n");
                 }
                 else
                 {
-                    richTextBoxLog.AppendText("The data does not match the signature.");
+                    richTextBoxLog.AppendText("The DS does not match to the signature." + "\n");
                 }
             }
             catch (Exception ex)
@@ -218,56 +203,152 @@ namespace RSAvsElliptic
 
         private void Sign_Click(object sender, EventArgs e)
         {
+            if (String.IsNullOrWhiteSpace(textBoxFilePath.Text))
+            {
+                MessageBox.Show("First please enter file to encrypt.");
+                return;
+            }
+            richTextBoxRSAparams.Clear();
+            // Create a UnicodeEncoder to convert between byte array and string.
+            var byteConverter = new ASCIIEncoding();
+            var sr = new StreamReader(textBoxFilePath.Text);
+
+            // Create byte arrays to hold original, encrypted, and decrypted data.
+            byte[] originalData = byteConverter.GetBytes(sr.ReadToEnd());
+
+            // Create a new instance of the RSACryptoServiceProvider class 
+            // and automatically create a new key-pair.
+            var rsaAlg = new RSACryptoServiceProvider(KeySizeRSA.Value);
+
+            // Export the key information to an RSAParameters object.
+            // You must pass true to export the private key for signing.
+            // No need to export the private key
+            // for verification.
+            _keyDigitalSignature = rsaAlg.ExportParameters(true);
+
+            _sw.Start();
+            // Hash and sign the data.
+            var signedData = _rsa.HashAndSignBytes(originalData, _keyDigitalSignature, KeySizeRSA.Value);
+            _sw.Stop();
+            TimeSpan ts = _sw.Elapsed;
+            _sw.Reset();
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds,
+                ts.Milliseconds / 10);
+
+            richTextBoxLog.AppendText("RSA Signature Time : " + elapsedTime + "\n");
+            richTextBoxLog.AppendText("RSA Signature: " + Encoding.Default.GetString(signedData) + "\n");
+
+            richTextBoxRSAparams.AppendText("D: " + Convert.ToBase64String(_rsa.RSAParams.D) + "\n");
+            richTextBoxRSAparams.AppendText("DP: " + Convert.ToBase64String(_rsa.RSAParams.DP) + "\n");
+            richTextBoxRSAparams.AppendText("DQ: " + Convert.ToBase64String(_rsa.RSAParams.DQ) + "\n");
+            richTextBoxRSAparams.AppendText("Exponent: " + Convert.ToBase64String(_rsa.RSAParams.Exponent) + "\n");
+            richTextBoxRSAparams.AppendText("InverseQ: " + Convert.ToBase64String(_rsa.RSAParams.InverseQ) + "\n");
+            richTextBoxRSAparams.AppendText("Modulus: " + Convert.ToBase64String(_rsa.RSAParams.Modulus) + "\n");
+            richTextBoxRSAparams.AppendText("P: " + Convert.ToBase64String(_rsa.RSAParams.P) + "\n");
+            richTextBoxRSAparams.AppendText("Q: " + Convert.ToBase64String(_rsa.RSAParams.Q) + "\n");
+
+        }
+
+        private void EncryptECC_Click(object sender, EventArgs e)
+        {
+            if (String.IsNullOrWhiteSpace(textBoxFilePath.Text))
+            {
+                MessageBox.Show("First please enter file to encrypt.");
+                return;
+            }
             try
             {
-                if (!String.IsNullOrWhiteSpace(textBoxFilePath.Text))
+                richTextBoxECCParams.Clear();
+                var br = new BinaryReader(File.OpenRead(textBoxFilePath.Text));
+                var chunk = br.ReadBytes(EccBlockSize);
+                while (chunk.Length > 0)
                 {
-                    richTextBoxRSAparams.Clear();
-
-                    // Create a UnicodeEncoder to convert between byte array and string.
-                    ASCIIEncoding ByteConverter = new ASCIIEncoding();
-                    StreamReader sr = new StreamReader(textBoxFilePath.Text);
-
-                    // Create byte arrays to hold original, encrypted, and decrypted data.
-
-                    byte[] originalData = ByteConverter.GetBytes(sr.ReadToEnd());
-                    byte[] signedData;
-
-                    // Create a new instance of the RSACryptoServiceProvider class 
-                    // and automatically create a new key-pair.
-                    RSACryptoServiceProvider RSAalg = new RSACryptoServiceProvider(KeySizeRSA.Value);
-
-                    // Export the key information to an RSAParameters object.
-                    // You must pass true to export the private key for signing.
-                    // However, you do not need to export the private key
-                    // for verification.
-                    KeyDigitalSignature = RSAalg.ExportParameters(true);
-
-                    sw.Start();
-                    // Hash and sign the data.
-                    signedData = rsa.HashAndSignBytes(originalData, KeyDigitalSignature, KeySizeRSA.Value);
-                    sw.Stop();
-                    TimeSpan ts = sw.Elapsed;
-                    sw.Reset();
-                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                        ts.Hours, ts.Minutes, ts.Seconds,
-                        ts.Milliseconds / 10);
-
-                    richTextBoxLog.AppendText("RSA Signature Time : " + elapsedTime + "\n");
-                    richTextBoxLog.AppendText("RSA Signature: " + Convert.ToBase64String(signedData) + "\n");
-
-                    richTextBoxRSAparams.AppendText("D: " + Convert.ToBase64String(rsa.RSAParams.D) + "\n");
-                    richTextBoxRSAparams.AppendText("DP: " + Convert.ToBase64String(rsa.RSAParams.DP) + "\n");
-                    richTextBoxRSAparams.AppendText("DQ: " + Convert.ToBase64String(rsa.RSAParams.DQ) + "\n");
-                    richTextBoxRSAparams.AppendText("Exponent: " + Convert.ToBase64String(rsa.RSAParams.Exponent) + "\n");
-                    richTextBoxRSAparams.AppendText("InverseQ: " + Convert.ToBase64String(rsa.RSAParams.InverseQ) + "\n");
-                    richTextBoxRSAparams.AppendText("Modulus: " + Convert.ToBase64String(rsa.RSAParams.Modulus) + "\n");
-                    richTextBoxRSAparams.AppendText("P: " + Convert.ToBase64String(rsa.RSAParams.P) + "\n");
-                    richTextBoxRSAparams.AppendText("Q: " + Convert.ToBase64String(rsa.RSAParams.Q) + "\n");
-
+                    _sw.Start();
+                    _ecc.Encrypt(chunk, Convert.ToInt32(comboBoxECCKeySize.Text));
+                    _sw.Stop();
+                    chunk = br.ReadBytes(EccBlockSize);
                 }
-                else
-                { MessageBox.Show("Enter file to Encrypt first."); }
+
+                TimeSpan ts = _sw.Elapsed;
+                _sw.Reset();
+
+                // Format and display the TimeSpan value.
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",ts.Hours, ts.Minutes, ts.Seconds,ts.Milliseconds);
+
+                richTextBoxLog.AppendText("\nECDH Encrypting time: " + elapsedTime + "\n");
+                richTextBoxLog.AppendText("\nECDH last chunk of encrypted data:\n" + Encoding.Default.GetString(_ecc.EncryptedData) + "\n\n");
+
+                br.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Something goes wrong " + ex.Message);
+            }
+
+        }
+
+        private void DecryptECC_Click(object sender, EventArgs e)
+        {
+            if (_ecc.EncryptedData == null)
+            {
+                MessageBox.Show("Enter file to encrypt and make Encrypt operation first.");
+                return;
+            }
+            try
+            {
+                richTextBoxECCParams.Clear();
+                var br = new BinaryReader(File.OpenRead(textBoxFilePath.Text));
+                var chunk = br.ReadBytes(EccBlockSize);
+                while (chunk.Length > 0)
+                {
+                    _ecc.Encrypt(chunk, Convert.ToInt32(comboBoxECCKeySize.Text));
+                    _sw.Start();
+                    _ecc.Decrypt(_ecc.EncryptedData, _ecc.IV);
+                    _sw.Stop();
+                    chunk = br.ReadBytes(EccBlockSize);
+                }
+
+                TimeSpan ts = _sw.Elapsed;
+                _sw.Reset();
+
+                // Format and display the TimeSpan value.
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds,ts.Milliseconds);
+
+                richTextBoxLog.AppendText("\nECDH: Decrypting time:" + elapsedTime + "\n");
+                richTextBoxLog.AppendText("\nECDH: The last chunk of decrypted data:" + Encoding.Default.GetString(_ecc.DencryptedData));
+                richTextBoxLog.AppendText("\nECDH: The last chunk of original data was:" + Encoding.Default.GetString(_ecc.OriginalData));
+                br.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Something went wrong: " + ex.Message);
+            }
+        }
+
+        private void SignECC_Click(object sender, EventArgs e)
+        {
+            if (String.IsNullOrWhiteSpace(textBoxFilePath.Text))
+            {
+                MessageBox.Show("First please enter file to encrypt.");
+                return;
+            }
+            
+            richTextBoxECCParams.Clear();
+            try
+            {
+                // Create a UnicodeEncoder to convert between byte array and string.
+                var byteConverter = new ASCIIEncoding();
+                var sr = new StreamReader(textBoxFilePath.Text);
+                _sw.Start();
+                _ecc.Sign(byteConverter.GetBytes(sr.ReadToEnd()), Convert.ToInt32(comboBoxECCKeySize.Text));
+                _sw.Stop();
+                TimeSpan ts = _sw.Elapsed;
+                _sw.Reset();
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds);
+
+                richTextBoxLog.AppendText("\nECC Signature Time : " + elapsedTime + "\n");
+                richTextBoxLog.AppendText("\nECC Signature: " + Encoding.Default.GetString(_ecc.Signature) + "\n");
             }
             catch (Exception ex)
             {
@@ -275,164 +356,29 @@ namespace RSAvsElliptic
             }
         }
 
-        private void EncryptECC_Click(object sender, EventArgs e)
-        {
-            if (!String.IsNullOrWhiteSpace(textBoxFilePath.Text))
-            {
-                try
-                {
-                    richTextBoxECCParams.Clear();
-                    BinaryReader br = new BinaryReader(File.OpenRead(textBoxFilePath.Text));
-
-                    int block_size = 20;
-                    byte[] chunk;
-                    
-                    chunk = br.ReadBytes(block_size);
-                    while (chunk.Length > 0)
-                    {
-                        sw.Start();
-                        ecc.Encrypt(chunk, Convert.ToInt32(comboBoxECCKeySize.Text));
-                        sw.Stop();
-                        sw1.Start();
-                        ecc.Decrypt(ecc.EncryptedData, ecc.IV);
-                        sw1.Stop();
-                        chunk = br.ReadBytes(block_size);
-                    }
-
-                    TimeSpan ts = sw.Elapsed;
-                    TimeSpan ts1 = sw1.Elapsed;
-                    sw.Reset();
-                    sw1.Reset();
-
-                    // Format and display the TimeSpan value.
-                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                        ts.Hours, ts.Minutes, ts.Seconds,
-                        ts.Milliseconds / 10);
-
-                    richTextBoxLog.AppendText("ECDH Encrypting time:\n");
-                    richTextBoxLog.AppendText(elapsedTime);
-                    richTextBoxLog.AppendText("ECDH Decrypting time:\n");
-                    richTextBoxLog.AppendText(String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                        ts1.Hours, ts1.Minutes, ts1.Seconds,
-                        ts1.Milliseconds / 10));
-                    richTextBoxLog.AppendText("\n");
-                    richTextBoxLog.AppendText("\nECDH last chunk of encrypted data:\n" + Convert.ToBase64String(ecc.EncryptedData) + "\n\n");
-
-                    br.Close();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Something goes wrong " + ex.Message);
-                }
-            }
-            else
-            { MessageBox.Show("Enter file to encrypt first."); }
-        }
-
-        private void DecryptECC_Click(object sender, EventArgs e)
-        {
-            if (ecc.EncryptedData != null)
-            {
-                try
-                {                  
-                    richTextBoxECCParams.Clear();
-                    BinaryReader br = new BinaryReader(File.OpenRead(textBoxFilePath.Text));
-
-                    int block_size = 20;
-                    byte[] chunk;
-
-                    chunk = br.ReadBytes(block_size);
-                    while (chunk.Length > 0)
-                    {                        
-                        ecc.Encrypt(chunk, Convert.ToInt32(comboBoxECCKeySize.Text));
-                        sw.Start();
-                        ecc.Decrypt(ecc.EncryptedData,ecc.IV);
-                        sw.Stop();
-                        chunk = br.ReadBytes(block_size);
-                    }
-
-                    TimeSpan ts = sw.Elapsed;
-                    sw.Reset();
-
-                    // Format and display the TimeSpan value.
-                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                        ts.Hours, ts.Minutes, ts.Seconds,
-                        ts.Milliseconds / 10);
-
-                    richTextBoxLog.AppendText("ECDH Decrypting time:\n");
-                    richTextBoxLog.AppendText(elapsedTime);
-                    richTextBoxLog.AppendText("\n");
-                    richTextBoxLog.AppendText("\nECDH last chunk of decrypted data:\n" + ByteConverter.GetString(ecc.Decrypt(ecc.EncryptedData, ecc.IV)));
-                    br.Close();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Something goes wrong " + ex.Message);
-                }
-            }
-            else
-            { MessageBox.Show("Enter file to encrypt and make Encrypt operation first."); }
-        }
-
-        private void SignECC_Click(object sender, EventArgs e)
-        {
-            if (!String.IsNullOrWhiteSpace(textBoxFilePath.Text))
-            {
-                richTextBoxECCParams.Clear();
-                try
-                {
-                    // Create a UnicodeEncoder to convert between byte array and string.
-                    ASCIIEncoding ByteConverter = new ASCIIEncoding();
-                    StreamReader sr = new StreamReader(textBoxFilePath.Text);
-                    sw.Start(); 
-                    ecc.Sign(ByteConverter.GetBytes(sr.ReadToEnd()), Convert.ToInt32(comboBoxECCKeySize.Text));
-                    sw.Stop();
-                    TimeSpan ts = sw.Elapsed;
-                    sw.Reset();
-                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                        ts.Hours, ts.Minutes, ts.Seconds,
-                        ts.Milliseconds / 10);
-
-                    richTextBoxLog.AppendText("ECC Signature Time : " + elapsedTime + "\n");
-                    richTextBoxLog.AppendText("ECC Signature: " + Convert.ToBase64String(ecc.Signature) + "\n");
-
-                }
-                catch (Exception ex )
-                {
-                    MessageBox.Show(ex.Message);
-                }
-
-            }
-            else
-            { MessageBox.Show("Enter file to Encrypt first."); }
-        }
-
         private void VirifyECC_Click(object sender, EventArgs e)
         {
+            if (_ecc.Signature == null)
+            {
+                MessageBox.Show("Data wasn`t signed yet! Try to sign data first.");
+                return;
+            }
             try
             {
-                // Verify the data and display the result to the 
-                // console.
-                if (ecc.Signature == null)
-                {
-                    MessageBox.Show("Data wasn`t signed yet! Try to sign data first.");
-                    return;
-                }
-                sw.Start();
-                bool verified = ecc.Verify(ecc.OriginalData,ecc.Signature);
-                sw.Stop();
+                _sw.Reset();
+                _sw.Start();
+                bool verified = _ecc.Verify(_ecc.OriginalData, _ecc.Signature);
+                _sw.Stop();
                 if (verified)
                 {
-                    TimeSpan ts = sw.Elapsed;
-                    sw.Reset();
-                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                        ts.Hours, ts.Minutes, ts.Seconds,
-                        ts.Milliseconds / 10);
-                    richTextBoxLog.AppendText("The data was verified. Time - " + elapsedTime);
+                    TimeSpan ts = _sw.Elapsed;
+                    _sw.Reset();
+                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds);
+                    richTextBoxLog.AppendText("\nThe DS was verified. Time - " + elapsedTime + '\n');
                 }
                 else
                 {
-                    richTextBoxLog.AppendText("The data does not match the signature.");
+                    richTextBoxLog.AppendText("\nThe DS does not match the signature.\n");
                 }
             }
             catch (Exception ex)
